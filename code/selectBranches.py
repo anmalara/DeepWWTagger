@@ -42,11 +42,12 @@ def selectBranches_Candidate(file_name, tree_name, branch_names, selection_cuts,
     else:
         px_index = branch_names.index("CandPx")
         py_index = branch_names.index("CandPy")
-    print("len_file = "+str(len(file)))
+    # print("len_file = "+str(len(file)))
     for x in range(0,len(file)):
         for y in range(0,len(branch_names)):
             file[x,y].resize(ncand, refcheck=False)
             temp = file[x,y].reshape(1,ncand)
+            temp = temp.astype(float)
             if y == 0:
                 info = temp
             else:
@@ -60,7 +61,7 @@ def selectBranches_Candidate(file_name, tree_name, branch_names, selection_cuts,
             info_candidates = np.concatenate((info_candidates, temp_jet))
         if (x-1)%1000 == 0:
             print("info_candidates.shape = "+str(info_candidates.shape))
-    print("done")
+    # print("done")
     return info_candidates
 
 
@@ -74,6 +75,7 @@ def selectBranches_Jet(file_name, tree_name, branch_names, selection_cuts):
                 #     print(branch_names[y])
                 continue
             file[x,y] = file[x,y][0]
+            file[x,y] = file[x,y].astype(float)
     return file
 
 

@@ -11,7 +11,7 @@ for file_min in {0..1999..$a}; do
     for radius in AK8 AK15 CA15; do
       for name_variable in gen_ norm ; do
         echo $file_min $[$file_min+$a] $pt_min[${index}] $pt_max[${index}] $name_variable $radius
-        python code/Lola.py $file_min $[$file_min+$a] $pt_min[${index}] $pt_max[${index}] $name_variable $radius &
+        python code/Lola.py $file_min $[$file_min+$a] $pt_min[${index}] $pt_max[${index}] $name_variable $radius 
         sleep 10
       done
     done
