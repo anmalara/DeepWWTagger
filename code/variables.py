@@ -6,7 +6,7 @@ import numpy as np
 
 sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/PersonalCode/")
 
-from Utils import *
+# from Utils import *
 
 ncand = 40
 n_images = 3
@@ -58,7 +58,7 @@ original_paths_dict = {"Higgs"  : "/pnfs/desy.de/cms/tier2/store/user/pgunnell/H
                        "QCD"    : "/pnfs/desy.de/cms/tier2/store/user/pgunnell/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/MC-CandidatesP8-QCD-GenInfos-v4/180413_073311/",
                        "Top"    : "/pnfs/desy.de/cms/tier2/store/user/pgunnell/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MC-CandidatesP8-Top-GenInfos-v5/180503_120147/"}
 
-@timeit
+# @timeit
 def countOriginalFiles():
   missing_items = []
   maxima = []

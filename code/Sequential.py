@@ -23,11 +23,10 @@ from sklearn.linear_model import LinearRegression
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier
 
+from variables import *
+
 seed = 10
 np.random.seed(seed)
-
-branch_names_jet = ["jetPt", "jetEta", "jetPhi", "jetMass", "jetEnergy", "jetBtag", "jetMassSoftDrop", "jetTau1", "jetTau2", "jetTau3", "jetTau4"]
-branch_names_gen_jet = ["GenJetPt", "GenJetEta", "GenJetPhi", "GenJetMass", "GenJetEnergy", "isBJetGen", "GenSoftDropMass", "GenJetTau1", "GenJetTau2", "GenJetTau3", "GenJetTau4"]
 
 
 def plot_ROC_Curve(tpr, fpr, name_plot, name_fig):
@@ -63,44 +62,47 @@ name_folder_output = "output_varariables/Sequential/"
 if not os.path.exists(file_path+name_folder_output):
     os.makedirs(file_path+name_folder_output)
 
-file_min = int(sys.argv[1])
-file_max = int(sys.argv[2])
-pt_min = int(sys.argv[3])
-pt_max = int(sys.argv[4])
-
-name_variable = sys.argv[5]
-radius =sys.argv[6]
+try:
+    file_min = int(sys.argv[1])
+    file_max = int(sys.argv[2])
+    pt_min = int(sys.argv[3])
+    pt_max = int(sys.argv[4])
+    info = sys.argv[5]
+    radius =sys.argv[6]
+except:
+    file_min = 0
+    file_max = 950
+    pt_min = 300
+    pt_max = 500
+    info = "JetInfo"
+    radius = "AK8"
 
 if not os.path.exists(file_path+name_folder_output+radius):
     os.makedirs(file_path+name_folder_output+radius)
 
-if name_variable=='norm':
-    name_variable=""
-
-if name_variable=='gen_':
+isGen = 0
+if "Gen" in info:
     isGen = 1
-else:
-    isGen = 0
 
-print file_min, file_max, pt_min, pt_max, name_variable, radius
 
 bkg = "Higgs"
-Higgs = np.load(file_path+name_folder+"Sequential_"+name_variable+"input_variable_"+bkg+"_"+radius+"_file_"+str(file_min)+"_"+str(file_max)+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy")
+Higgs = np.load(file_path+name_folder+"Sequential_"+info+"_"+bkg+"_"+radius+"_file_"+str(file_min)+"_"+str(files_dictionary[bkg][0])+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy")
 bkg = "QCD"
-QCD = np.load(file_path+name_folder+"Sequential_"+name_variable+"input_variable_"+bkg+"_"+radius+"_file_"+str(file_min)+"_"+str(file_max)+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy")
+QCD = np.load(file_path+name_folder+"Sequential_"+info+"_"+bkg+"_"+radius+"_file_"+str(file_min)+"_"+str(files_dictionary[bkg][0])+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy")
 
 print Higgs.shape, QCD.shape
 
-variable_used=name_variable+"subjet"
+variable_used=info+"subjet"
 
 if isGen:
-    Higgs = Higgs[:,(branch_names_gen_jet.index("GenSoftDropMass"), branch_names_gen_jet.index("GenJetTau1"), branch_names_gen_jet.index("GenJetTau2"), branch_names_gen_jet.index("GenJetTau3"), branch_names_gen_jet.index("GenJetTau4"))]
-    QCD = QCD[:,(branch_names_gen_jet.index("GenSoftDropMass"), branch_names_gen_jet.index("GenJetTau1"), branch_names_gen_jet.index("GenJetTau2"), branch_names_gen_jet.index("GenJetTau3"), branch_names_gen_jet.index("GenJetTau4"))]
+    i = (branch_names_dict["GenJetInfo"].index("GenSoftDropMass"), branch_names_dict["GenJetInfo"].index("GenJetTau1"), branch_names_dict["GenJetInfo"].index("GenJetTau2"), branch_names_dict["GenJetInfo"].index("GenJetTau3"), branch_names_dict["GenJetInfo"].index("GenJetTau4"))
 else:
-    Higgs = Higgs[:,(branch_names_jet.index("jetMassSoftDrop"), branch_names_jet.index("jetTau1"), branch_names_jet.index("jetTau2"), branch_names_jet.index("jetTau3"), branch_names_jet.index("jetTau4"))]
-    QCD = QCD[:,(branch_names_jet.index("jetMassSoftDrop"), branch_names_jet.index("jetTau1"), branch_names_jet.index("jetTau2"), branch_names_jet.index("jetTau3"), branch_names_jet.index("jetTau4"))]
+    i = (branch_names_dict["JetInfo"].index("jetMassSoftDrop"), branch_names_dict["JetInfo"].index("jetTau1"), branch_names_dict["JetInfo"].index("jetTau2"), branch_names_dict["JetInfo"].index("jetTau3"), branch_names_dict["JetInfo"].index("jetTau4"))
 
-print Higgs.shape, QCD.shape#
+Higgs = Higgs[:,i]
+QCD   =   QCD[:,i]
+
+print Higgs.shape, QCD.shape
 
 (Higgs, Higgs_test, Higgs_val) = np.array_split(Higgs, 3)
 (QCD, QCD_test, QCD_val) = np.array_split(QCD, 3)
