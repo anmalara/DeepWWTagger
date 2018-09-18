@@ -1,4 +1,6 @@
 code/transfer
+code/log_*
+code/log_*/*
 code/transfer/*
 LorentzLayer/.git
 LorentzLayer/*
