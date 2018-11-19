@@ -1,0 +1,8 @@
+executable          = launch_batch.sh
+transfer_executable = True
+universe            = vanilla
+output              = condor_$(Cluster)_$(Process).out
+error               = condor_$(Cluster)_$(Process).error
+log                 = condor_$(Cluster)_$(Process).log
+arguments = $(Process)
+queue 1500

@@ -43,4 +43,8 @@ for bkg in bkgs:
 
 
 print len(list_processes)
-parallelise(list_processes, 20, list_logfiles)
+
+for i in list_processes:
+    list_processes
+
+# parallelise(list_processes, 20, list_logfiles)

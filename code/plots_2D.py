@@ -83,7 +83,7 @@ for pt in ["300_500", "500_10000"]:
       process = bkg+radius+"_pt_"+pt
       print process
       # for i in range(files_dictionary[bkg][0]):
-      # array = addFiles(0, 100, bkg, radius, pt)
-      array = addFiles(0, files_dictionary[bkg][0], bkg, radius, pt)
+      array = addFiles(0, 100, bkg, radius, pt)
+      # array = addFiles(0, files_dictionary[bkg][0], bkg, radius, pt)
       plotJetImages(array, process, output_path)
       del array

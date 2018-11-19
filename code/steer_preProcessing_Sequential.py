@@ -1,6 +1,6 @@
 from variables import *
 
-sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/")
 from parallelise import *
 
 ##################################################
@@ -54,6 +54,8 @@ for bkg in bkgs:
         j += 1
 
 print len(list_processes)
+for i in list_processes:
+  print i
 parallelise(list_processes, 20, list_logfiles)
 
 ####################

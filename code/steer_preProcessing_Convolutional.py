@@ -1,6 +1,6 @@
 from variables import *
 
-sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/PersonalCode/")
+sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v2/CMSSW_9_4_1/src/UHH2/PersonalCode/")
 from parallelise import *
 
 ##################################################
@@ -19,7 +19,8 @@ try:
     step = int(sys.argv[3])
 except:
     min = 0
-    max = 10000
+    # max = 10000
+    max = 2
     step = 1
 
 pts_min = [300,500]
@@ -81,6 +82,9 @@ for bkg in bkgs:
           j += 1
 
 print len(list_processes)
+
+# for i in list_processes:
+  # print i
 
 parallelise(list_processes, 20, list_logfiles)
 

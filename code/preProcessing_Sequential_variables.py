@@ -6,6 +6,7 @@ import sys
 
 from variables import *
 
+@timeit
 def Sequential_var_selection(file_path, name_folder, info, bkg, name_folder_output, file_min, file_max, radius, pt_min, pt_max):
     first = True
     for i in range(file_min, file_max):
@@ -21,9 +22,11 @@ def Sequential_var_selection(file_path, name_folder, info, bkg, name_folder_outp
         else:
             jet_info = np.concatenate((jet_info,jet_vars))
     if not first:
-        print jet_info.shape
+        jet_info = jet_info.astype(variable_type)
+        print jet_info.shape, type(jet_info[0,0])
         np.save(file_path+name_folder_output+"Sequential_"+info+"_"+bkg+"_"+radius+"_file_"+str(file_min)+"_"+str(file_max)+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy", jet_info)
 
+@timeit
 def merge_file(file_path, name_folder_output, info, bkg, radius, file_min, file_max, pt_min, pt_max, step):
     first = True
     for i in range(file_min, file_max, step):
@@ -44,7 +47,8 @@ def merge_file(file_path, name_folder_output, info, bkg, radius, file_min, file_
             os.makedirs(temp_fold)
         os.system("mv "+file_name+" "+temp_fold)
     if not first:
-        print final.shape
+        final = final.astype(variable_type)
+        print final.shape, type(final[0,0])
         np.save(file_path+name_folder_output+"Sequential_"+info+"_"+bkg+"_"+radius+"_file_"+str(file_min)+"_"+str(file_max)+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy", final)
 
 
