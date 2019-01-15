@@ -1,8 +1,9 @@
 #HTC Submission File
 if !defined FNAME
-  FNAME = log_selectBranches/condor_exec
+  FNAME = log_preProcessing_Conv2D/condor_exec
 endif
-ID      = $(Cluster).$(Process)
+
+ID      = $(Cluster).$(myProcess)
 
 output  = $(FNAME).$(ID).out
 error   = $(FNAME).$(ID).err
@@ -18,9 +19,7 @@ RequestDisk         = 2G
 getenv              = True
 environment         = "LD_LIBRARY_PATH_STORED=/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/SFrame/lib:/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/biglib/slc6_amd64_gcc630:/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/lib/slc6_amd64_gcc630:/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/external/slc6_amd64_gcc630/lib:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_9_4_1/biglib/slc6_amd64_gcc630:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_9_4_1/lib/slc6_amd64_gcc630:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_9_4_1/external/slc6_amd64_gcc630/lib:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/llvm/4.0.1/lib64:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/gcc/6.3.0/lib64:/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/gcc/6.3.0/lib:/cvmfs/grid.cern.ch/emi-ui-3.17.1-1.el6umd4v5/lib64:/cvmfs/grid.cern.ch/emi-ui-3.17.1-1.el6umd4v5/lib:/cvmfs/grid.cern.ch/emi-ui-3.17.1-1.el6umd4v5/usr/lib64:/cvmfs/grid.cern.ch/emi-ui-3.17.1-1.el6umd4v5/usr/lib:/cvmfs/grid.cern.ch/emi-ui-3.17.1-1.el6umd4v5/usr/lib64/dcap"
 
-#nice_user           = True
-executable          = /nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/Analysis/DeepWWTagger/code/launch_batch.sh
+nice_user           = True
+executable          = /nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/Analysis/DeepWWTagger/code/launch_batch_preProcessing_Conv2D.sh
 transfer_executable = True
-MyIndex             = $(Process) + 1
-file_max            = $INT(MyIndex,%d)
-arguments           = "$(Process) $(file_max) $(sample) $(radius)"
+arguments           = "$(filemin) $(filemax) $(sample) $(radius) $(ptmin) $(ptmax)"

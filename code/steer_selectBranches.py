@@ -23,7 +23,7 @@ except:
     step = 10
 
 
-log_folder= "./log_preProcessing_Conv2D/"
+log_folder= "./log_selectBranches/"
 for file in glob(log_folder+"*txt"):
     os.remove(file)
 
@@ -37,21 +37,20 @@ list_logfiles   = []
 i = 0
 for bkg in bkgs:
     for radius in radii:
-        for pt_index, pt_min in enumerate(pts_min):
-            for index in range(0,files_dictionary[bkg]["maximum"],step):
-                list_batch.append( ["condor_submit", "condor_preProcessing_Conv2D.submit", "-a", "filemin="+str(index), "filemax="+str(index+step), "sample="+bkg, "radius="+radius, "ptmin="+str(pt_min), "ptmax="+str(pts_max[pt_index]), "myProcess="+str(i), "-queue", "1" ])
-                list_processes.append( ["python", "preProcessing_Conv2D_variables.py", str(index), str(index+step), bkg, radius, str(pt_min), str(pts_max[pt_index])])
-                list_logfiles.append(log_folder+str(i)+"_log.txt")
-                i += 1
+        for index in range(0,files_dictionary[bkg]["maximum"],step):
+            list_batch.append( ["condor_submit", "condor_selectBranches.submit", "-a", "filemin="+str(index), "filemax="+str(index+step), "sample="+bkg, "radius="+radius, "myProcess="+str(i), "-queue", "1" ])
+            list_processes.append( ["python", "selectBranches.py", str(index), str(index+step), bkg, radius] )
+            list_logfiles.append(log_folder+bkg+radius+str(index)+"_log.txt")
+            i += 1
 
 
-print len(list_batch)
-for i in list_batch:
-    print i
+# print len(list_batch)
+# for i in list_batch:
+#     print i
 
 print len(list_processes)
 # for i in list_processes:
 #     print i
 
 # parallelise(list_batch, 20)
-parallelise(list_processes, 20, list_logfiles)
+# parallelise(list_processes, 20, list_logfiles)

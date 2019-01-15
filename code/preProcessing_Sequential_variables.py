@@ -3,54 +3,58 @@ import time
 import os
 import os.path
 import sys
+import glob
+from math import sqrt, fabs
 
 from variables import *
+from Prepocessing import *
+
+def CreateJetVariables(Vars):
+    for var in Vars:
+        if "CandInfo" != var:
+            continue
+        for event in range(Vars[var].shape[0]):
+            px, py, pz, pt, E  = 0, 0, 0, 0, 0
+            for cand in range(Vars[var].shape[2]):
+                px_ = Vars[var][event,CandPx_index,cand]
+                py_ = Vars[var][event,CandPy_index,cand]
+                pt_ = Vars[var][event,CandPt_index,cand]
+                print sqrt(fabs(pt*pt-px*px-py*py)), pt, cand
+                px += Vars[var][event,CandPx_index,cand]
+                py += Vars[var][event,CandPy_index,cand]
+                pz += Vars[var][event,CandPz_index,cand]
+                pt += Vars[var][event,CandPt_index,cand]
+                E  += Vars[var][event,CandEnergy_index,cand]
+            print sqrt(pt*pt-px*px-py*py)/pt, sqrt(fabs(E*E-pz*pz-pt*pt)), Vars["JetInfo"][event,jetMassSoftDrop_index],Vars["JetInfo"][event,jetMass_index], event,var
+
+
+
 
 @timeit
-def Sequential_var_selection(file_path, name_folder, info, bkg, name_folder_output, file_min, file_max, radius, pt_min, pt_max):
-    first = True
+def Sequential_var_selection(folder_input, folder_output, file_min, file_max, bkg, radius, pt_min, pt_max):
     for i in range(file_min, file_max):
-        if (((i-file_min)*100./(file_max-file_min))%10==0): print("progress: "+str(int((i-file_min)*100./(file_max-file_min)))+" %")
-        file_name = file_path+name_folder+bkg+"_"+radius+"/"+info+"_"+bkg+"_"+str(i)+".npy"
-        if not os.path.isfile(file_name):
-            continue
-        jet_vars = np.load(file_name)
-        jet_vars = jet_vars[(jet_vars[:,branch_names_dict["JetInfo"].index("jetPt")]>pt_min)*(jet_vars[:,branch_names_dict["JetInfo"].index("jetPt")]<pt_max)]
-        if first:
-            jet_info = jet_vars
-            first = False
-        else:
-            jet_info = np.concatenate((jet_info,jet_vars))
-    if not first:
-        jet_info = jet_info.astype(variable_type)
-        print jet_info.shape, type(jet_info[0,0])
-        np.save(file_path+name_folder_output+"Sequential_"+info+"_"+bkg+"_"+radius+"_file_"+str(file_min)+"_"+str(file_max)+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy", jet_info)
-
-@timeit
-def merge_file(file_path, name_folder_output, info, bkg, radius, file_min, file_max, pt_min, pt_max, step):
-    first = True
-    for i in range(file_min, file_max, step):
-        file_name = file_path+name_folder_output+"Sequential_"+info+"_"+bkg+"_"+radius+"_file_"+str(i)+"_"+str(i+step)+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy"
-        if not os.path.isfile(file_name):
-            with open(file_path+name_folder_output+"/problem_"+bkg+radius+"_"+str(pt_min)+"_"+str(pt_max)+".txt","a") as F:
-                F.write("Missing "+bkg+"-"+radius+"-"+str(pt_min)+"-"+str(pt_max)+" "+str(i)+"_"+str(i+step)+"\n")
-            continue
-        file = np.load(file_name)
-        print file.shape
-        if first:
-            final = file
-            first = False
-        else:
-            final = np.concatenate((final,file))
-        temp_fold = file_path+name_folder_output+"save/"
-        if not os.path.exists(temp_fold):
-            os.makedirs(temp_fold)
-        os.system("mv "+file_name+" "+temp_fold)
-    if not first:
-        final = final.astype(variable_type)
-        print final.shape, type(final[0,0])
-        np.save(file_path+name_folder_output+"Sequential_"+info+"_"+bkg+"_"+radius+"_file_"+str(file_min)+"_"+str(file_max)+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy", final)
-
+        infos = {}
+        for info in branch_names_dict:
+            infos[info]= []
+        Vars = {}
+        for info in infos:
+            file_name = folder_input+bkg+"_"+radius+"/"+info+"/"+info+"_"+str(i)+".npy"
+            if not os.path.isfile(file_name):
+                with open(folder_output+"problem_"+bkg+"_"+radius+".txt","a") as F:
+                    F.write("Missing "+bkg+"_"+radius+"_"+info+"_"+str(pt_min)+"_"+str(pt_max)+" "+str(i)+"\n")
+                continue
+            Vars[info] = np.load(file_name)
+        preprocessing_pt_selection(Vars, "JetInfo", pt_min, pt_max)
+        for i in Vars.keys(): print i, Vars[i].shape
+        for i in Vars.keys(): print Vars[i].shape
+        for info in infos:
+            infos[info].append(Vars[info])
+        for info in infos:
+            infos[info] = np.concatenate(infos[info])
+            infos[info] = infos[info].astype(variable_type)
+            name = folder_output+info+"/Sequential_"+info+"_"+bkg+"_"+radius+"_file_"+str(i)+"_pt_"+str(pt_min)+"_"+str(pt_max)+".npy"
+            print infos[info].shape, name
+            np.save(name, infos[info])
 
 ##################################################
 #                                                #
@@ -58,41 +62,24 @@ def merge_file(file_path, name_folder_output, info, bkg, radius, file_min, file_
 #                                                #
 ##################################################
 
-file_path = out_path
-name_folder = "input_varariables/NTuples_Tagger/"
-name_folder_output = name_folder+"Sequential/"
-if not os.path.exists(file_path+name_folder_output):
-    os.makedirs(file_path+name_folder_output)
 
 try:
     file_min = int(sys.argv[1])
     file_max = int(sys.argv[2])
     bkg = sys.argv[3]
     radius = sys.argv[4]
-    info = sys.argv[5]
-    pt_min = int(sys.argv[6])
-    pt_max = int(sys.argv[7])
-    step = int(sys.argv[8])
-    flag_merge = int(sys.argv[9])
-except :
-    file_min = 0
-    file_max = 10
+    pt_min = int(sys.argv[5])
+    pt_max = int(sys.argv[6])
+except Exception as e:
+    file_min = 10
+    file_max = 20
     bkg = "Higgs"
     radius = "AK8"
-    info = "JetInfo"
     pt_min = 300
     pt_max = 500
-    step = 10
-    flag_merge = 0
 
-# if name_variable=='norm':
-#     name_variable=""
+folder_input  = out_path+"input_varariables/NTuples_Tagger/"
+folder_output = out_path+"input_varariables/NTuples_Tagger/Sequential/"+bkg+"_"+radius+"/"
 
-temp_fold = file_path+name_folder_output+"save/"
-if not os.path.exists(temp_fold):
-    os.makedirs(temp_fold)
 
-if flag_merge:
-    merge_file(file_path, name_folder_output, info, bkg, radius, file_min, file_max, pt_min, pt_max, step)
-else:
-    Sequential_var_selection(file_path, name_folder, info, bkg, name_folder_output, file_min, file_max, radius, pt_min, pt_max)
+Sequential_var_selection(folder_input, folder_output, file_min, file_max, bkg, radius, pt_min, pt_max)
