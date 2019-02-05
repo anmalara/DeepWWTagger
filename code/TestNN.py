@@ -193,13 +193,13 @@ pretest = copy.deepcopy(NN.data_train)
 test = copy.deepcopy(NN.data_train)
 NN.Normalization()
 posttest = copy.deepcopy(NN.data_train)
-# NN.SequentialModel()
-# NN.FitModel()
-# NN.Predict()
-# NN.Plots(show_figure = False, save_figure = True)
-# NN.SaveModel()
-#
-# quit()
+NN.SequentialModel()
+NN.FitModel()
+NN.Predict()
+NN.Plots(show_figure = False, save_figure = True)
+NN.SaveModel()
+
+quit()
 
 
 # test = np.array()

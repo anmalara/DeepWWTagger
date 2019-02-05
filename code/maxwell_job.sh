@@ -12,7 +12,7 @@
 #SBATCH --mail-user andrea.malara@desy.de  # Email to which notifications will be sent
 
 
-source ~/.setenv
+source ~/.setpaths
 
 cd /beegfs/desy/user/amalara/DeepWWTagger/code
 python Sequential.py
