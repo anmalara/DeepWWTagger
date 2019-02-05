@@ -4,3 +4,5 @@ code/log_*/*
 code/transfer/*
 LorentzLayer/.git
 LorentzLayer/*
+./**/*.pyc
+
