@@ -99,7 +99,7 @@ class SequentialNN:
             elif name=="jetEta": return "StandardScaler"
             else: return "MinMaxScaler"
         with open(self.modelpath+"NormInfo.txt", "w") as f:
-            f.write("# nameBranch NameScaler scaler.mean_[0] scaler.scale_\n")
+            if self.isNew: f.write("# nameBranch NameScaler scaler.mean_[0] scaler.scale_\n")
             for iBranch in self.subset:
                 nameBranch = self.branches[iBranch]
                 indexBranch = (self.variables.index(nameBranch),)

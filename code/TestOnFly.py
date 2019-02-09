@@ -10,7 +10,7 @@ NN = SequentialNN(dict_var, False)
 NN.InputShape()
 NN.CreateSubSet()
 NN.Normalization()
-NN.model = load_model(path+"model_epoch006_acc0.76.h5")
+NN.model = load_model(path+"model_epoch022_loss0.57.h5")
 NN.Predict()
 NN.Plots(show_figure = False, save_figure = True, extraName="epoch006")
 
