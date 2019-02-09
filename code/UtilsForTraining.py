@@ -1,4 +1,4 @@
-climport numpy as np
+import numpy as np
 from math import *
 import sys
 import os
