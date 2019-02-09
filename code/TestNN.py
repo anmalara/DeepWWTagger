@@ -178,7 +178,7 @@ dict_var = {"Info_dict": Info_dict,
             "radius" : "AK8",
             "pt_min" : 300,
             "pt_max" : 500,
-            "max_size" : 15000,
+            "max_size" : 300000,
             "layers" : [50,50,50,50,50,50,10],
             "params" : {"epochs" : 100, "batch_size" : 512, "activation" : "relu", "kernel_initializer": "glorot_normal", "bias_initializer": "ones", "activation_last": "softmax", "optimizer": "adam", "metrics":["accuracy"], "dropoutRate": 0.01},
             "seed" : 4444
@@ -193,8 +193,8 @@ pretest = copy.deepcopy(NN.data_train)
 test = copy.deepcopy(NN.data_train)
 NN.Normalization()
 posttest = copy.deepcopy(NN.data_train)
-NN.SequentialModel()
-NN.FitModel()
+# NN.SequentialModel()
+# NN.FitModel()
 NN.Predict()
 NN.Plots(show_figure = False, save_figure = True)
 NN.SaveModel()
@@ -204,9 +204,9 @@ quit()
 
 # test = np.array()
 
-modelname = "model_300epochs_1500k"
+modelname = "model_100epochs_300k"
 modelname = "model_test"
-# model = load_model("/beegfs/desy/user/amalara/output_varariables/Sequential/model_AK8_pt_300_500/model_300epochs_1500k/mymodel.h5")
+model = load_model("/beegfs/desy/user/amalara/output_varariables/Sequential/model_AK8_pt_300_500/model_100epochs_300k/mymodel.h5")
 
 variables = ["jetPt", "jetEta", "jetPhi", "jetMass", "jetEnergy", "ncandidates", "jetBtag", "jetTau1", "jetTau2", "jetTau3", "jetTau21", "jetTau31", "jetTau32"]
 
@@ -237,9 +237,8 @@ test += means
 test - posttest
 
 
-test = np.array([375.60577, 1.5032118, 2.1382484, 5489.4786, 894.05535, 0.2823343, 0.1399507, 0.0921988, 0.6395325, 86, 0.4956915, 0.3265591, 0.6587950])
-# test
-test = np.array([438.78707, 0.5129144, 3.0206136, 50.267421, 509.01425, 0.4989742, 0.2019137, 0.1303722, 0.0840893, 84, 0.6456830, 0.4164616, 0.6449938])
+test = np.array([388.244, 0.560351, -0.149161, 91.6124, 460.023, 82, 0.0838463, 0.208425, 0.103202, 0.0712684, 0.49515, 0.341938, 0.690574])
+test1 = np.array([0.441074, 0.521757, 0.476253, 0.31546, 0.0624416, 4.17372, 0.050386, 0.305906, 0.217231, 0.227347, 0.548055, 0.431674, 0.718178])
 # test/pretest[0]
 # test = copy.deepcopy(pretest[0])
 # test

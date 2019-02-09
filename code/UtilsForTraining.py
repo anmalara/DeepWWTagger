@@ -1,4 +1,4 @@
-import numpy as np
+climport numpy as np
 from math import *
 import sys
 import os
@@ -14,6 +14,8 @@ from keras.callbacks import History, ModelCheckpoint, ReduceLROnPlateau
 from sklearn import preprocessing
 from sklearn.metrics import roc_curve, auc
 
+nbins = 100
+
 
 colorsample = {"Other Bkg" : "k", "Random" : "r", "Higgs": "tab:red", "QCD": "b", "Top": "tab:green", "DY": "tab:olive", "WJets": "m", "WZ": "tab:purple", "ZZ": "tab:cyan"}
 
@@ -22,11 +24,11 @@ def timeit(method):
         ts = time.time()
         result = method(*args, **kw)
         te = time.time()
-        if 'log_time' in kw:
-            name = kw.get('log_name', method.__name__.upper())
-            kw['log_time'][name] = int((te - ts))
+        if "log_time" in kw:
+            name = kw.get("log_name", method.__name__.upper())
+            kw["log_time"][name] = int((te - ts))
         else:
-            print '%r  %2.2f s' % \
+            print "%r  %2.2f s" % \
                   (method.__name__, (te - ts))
         return result
     return timed
@@ -45,19 +47,19 @@ def NNResponce(labels, predictions, sample_names, isLogy=True, show_figure=True,
             fpr, tpr, thr = roc_curve(lab, pred)
             plt.cla()
             plt.xticks( np.arange(0.1,1.1,0.1) )
-            plt.grid(True, which='both')
+            plt.grid(True, which="both")
             plt.xlabel("NN responce")
             plt.ylabel("A.U.")
-            plt.hist(pred[lab==1], alpha = 0.5, bins=100, log=True, label=signal, color = colorsample[signal])
-            plt.hist(pred[lab!=1], alpha = 0.5, bins=100, log=True, label=bkg, color = colorsample[bkg])
-            plt.hist(otherbkg, alpha = 0.5, bins=100, log=True, label="Other Bkg", color = colorsample["Other Bkg"])
+            plt.hist(pred[lab==1], alpha = 0.5, bins=nbins, log=True, label=signal, color = colorsample[signal])
+            plt.hist(pred[lab!=1], alpha = 0.5, bins=nbins, log=True, label=bkg, color = colorsample[bkg])
+            plt.hist(otherbkg, alpha = 0.5, bins=nbins, log=True, label="Other Bkg", color = colorsample["Other Bkg"])
             with open(name+"WP.txt","w") as f:
                 f.write("fpr \t tpr \t thr\n")
                 for wp in [10,1,0.1]:
                     index = (np.abs(fpr - wp/100.)).argmin()
                     plt.axvline(x=thr[index], color = "r", label = "@"+str(wp)+"%"+"fpr: sig_tpr="+str(round(tpr[index],2))+" allbkgs_fpr="+str(round(len(otherbkg[otherbkg>thr[index]])*1./len(otherbkg),3)) )
                     f.write(str(fpr[index])+"\t"+str(tpr[index])+"\t"+str(thr[index])+"\n")
-            plt.legend(loc='best', shadow=True, title=signal+" vs "+bkg+"   auc = "+str(round(auc(fpr,tpr),3)))
+            plt.legend(loc="lower center", shadow=True, title=signal+" vs "+bkg+"   auc = "+str(round(auc(fpr,tpr),3)))
             if save_figure:
                 if isinstance(save_figure, bool):
                     plt.savefig(name+signal+"vs"+bkg+".png")
@@ -65,6 +67,36 @@ def NNResponce(labels, predictions, sample_names, isLogy=True, show_figure=True,
             if show_figure:
                 plt.show()
 
+
+
+
+
+
+@timeit
+def plot_outputs_1d(NN, isLogy=True, show_figure=True, save_figure=False, name = "Outputs"):
+    classes = to_categorical(np.arange(len(NN.sample_names)))
+    for i_cl, cl in enumerate(NN.sample_names):
+        plt.cla()
+        plt.xticks( np.arange(0.1,1.1,0.1) )
+        plt.grid(True, which="both")
+        plt.xlabel("NN responce")
+        plt.ylabel("A.U.")
+        for i_sample, sample in enumerate(NN.sample_names):
+            mask_train = np.all(NN.labels_train[:]==classes[i_sample], axis=1)
+            mask_val = np.all(NN.labels_val[:]==classes[i_sample], axis=1)
+            train = NN.predictions_train[mask_train][:,i_cl]
+            val = NN.predictions_val[mask_val][:,i_cl]
+            y_val, _ = np.histogram(val, bins=nbins)
+            y_test, _ = np.histogram(val, bins=nbins)
+            y_train, bins_train, _ = plt.hist(train, alpha=0.5, bins=nbins, density=False, histtype="step", log=True, label="Training sample,"+sample, color = colorsample[sample])
+            plt.errorbar(0.5*(bins_train[1:] + bins_train[:-1]), y_val*len(train)/len(val), yerr=y_val**0.5, fmt=".", label="Validation sample,"+sample, color=colorsample[sample])
+        plt.legend(loc="lower center", shadow=True)
+        if save_figure:
+            if isinstance(save_figure, bool):
+                plt.savefig(name+cl+".png")
+                plt.savefig(name+cl+".pdf")
+        if show_figure:
+            plt.show()
 
 
 @timeit
@@ -96,7 +128,7 @@ def plot_ROC_Curves(labels, predictions, sample_names, isLogy=True, show_figure=
     classes = to_categorical(np.arange(len(sample_names)))
     plt.cla()
     plt.xticks( np.arange(0.1,1.1,0.1) )
-    plt.grid(True, which='both')
+    plt.grid(True, which="both")
     for i, sample in enumerate(sample_names):
         fpr, tpr, thr = roc_curve(labels[:,i], predictions[:,i])
         label = sample+": auc = "+str(round(auc(fpr,tpr),3))
@@ -120,7 +152,7 @@ def plot_ROC_Curves(labels, predictions, sample_names, isLogy=True, show_figure=
     plt.ylim([0.001, 1.05])
     plt.xlabel("Signal efficiency")
     plt.ylabel("Background mistag rate")
-    plt.legend(loc='best', shadow=True)
+    plt.legend(loc="best", shadow=True)
     if save_figure:
         if isinstance(save_figure, bool):
             plt.savefig(name+".png")
@@ -135,7 +167,7 @@ def plot_ROC_Curves1vs1(labels, predictions, sample_names, isLogy=True, show_fig
     for i_signal, signal in enumerate(sample_names):
         plt.cla()
         plt.xticks( np.arange(0.1,1.1,0.1) )
-        plt.grid(True, which='both')
+        plt.grid(True, which="both")
         mask = labels[:,sample_names.index(signal)] == 1
         for i_bkg, bkg in enumerate(sample_names):
             if bkg == signal:
@@ -156,7 +188,7 @@ def plot_ROC_Curves1vs1(labels, predictions, sample_names, isLogy=True, show_fig
         plt.ylim([0.001, 1.05])
         plt.xlabel("Signal efficiency")
         plt.ylabel("Background mistag rate")
-        plt.legend(loc='best', shadow=True)
+        plt.legend(loc="best", shadow=True)
         if save_figure:
             if isinstance(save_figure, bool):
                 plt.savefig(name+"_"+signal+".png")
@@ -184,15 +216,16 @@ def plot_losses(hist, show_figure=True, save_figure=False, losses="loss", min_ep
         plt.show()
 
 @timeit
-def PlotInfos(labels, predictions, sample_names,history,modelpath, show_figure = False, save_figure = True):
-    plot_ROC_Curves(labels, predictions, sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name=modelpath+"Roc")
-    plot_ROC_Curves1vs1(labels, predictions, sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name=modelpath+"Roc1vs1")
-    NNResponce(labels, predictions, sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = modelpath+"NNResponce")
-    MaximiseSensitivity(labels, predictions, sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = modelpath+"Sensistivity")
-    plot_losses(history, min_epoch=0,  losses="loss", show_figure=show_figure, save_figure=save_figure, name=modelpath+"loss")
-    plot_losses(history, min_epoch=0,  losses="acc",  show_figure=show_figure, save_figure=save_figure, name=modelpath+"acc")
-    plot_losses(history, min_epoch=10, losses="loss", show_figure=show_figure, save_figure=save_figure, name=modelpath+"loss_10")
-    plot_losses(history, min_epoch=10, losses="acc",  show_figure=show_figure, save_figure=save_figure, name=modelpath+"acc_10")
+def PlotInfos(NN, show_figure = False, save_figure = True):
+    plot_ROC_Curves(NN.labels_val, NN.predictions_val, NN.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name=NN.modelpath+"Roc")
+    plot_ROC_Curves1vs1(NN.labels_val, NN.predictions_val, NN.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name=NN.modelpath+"Roc1vs1")
+    plot_outputs_1d(NN, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = NN.modelpath+"Outputs")
+    NNResponce(NN.labels_val, NN.predictions_val, NN.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = NN.modelpath+"NNResponce")
+    MaximiseSensitivity(NN.labels_val, NN.predictions_val, NN.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = NN.modelpath+"Sensistivity")
+    plot_losses(NN.callbacks[0], min_epoch=0,  losses="loss", show_figure=show_figure, save_figure=save_figure, name=NN.modelpath+"loss")
+    plot_losses(NN.callbacks[0], min_epoch=0,  losses="acc",  show_figure=show_figure, save_figure=save_figure, name=NN.modelpath+"acc")
+    plot_losses(NN.callbacks[0], min_epoch=10, losses="loss", show_figure=show_figure, save_figure=save_figure, name=NN.modelpath+"loss_10")
+    plot_losses(NN.callbacks[0], min_epoch=10, losses="acc",  show_figure=show_figure, save_figure=save_figure, name=NN.modelpath+"acc_10")
 
 
 
@@ -201,14 +234,14 @@ def DefineCallbacks(modelpath):
     callbacks = []
     history = History()
     callbacks.append(history)
-    modelCheckpoint_loss        = ModelCheckpoint(modelpath+"model_epoch{epoch:03d}_loss{val_loss:.2f}.h5", monitor='val_loss', save_best_only=False)
+    modelCheckpoint_loss        = ModelCheckpoint(modelpath+"model_epoch{epoch:03d}_loss{val_loss:.2f}.h5", monitor="val_loss", save_best_only=False)
     callbacks.append(modelCheckpoint_loss)
-    modelCheckpoint_acc         = ModelCheckpoint(modelpath+"model_epoch{epoch:03d}_acc{val_acc:.2f}.h5", monitor='val_acc', save_best_only=False)
+    modelCheckpoint_acc         = ModelCheckpoint(modelpath+"model_epoch{epoch:03d}_acc{val_acc:.2f}.h5", monitor="val_acc", save_best_only=False)
     callbacks.append(modelCheckpoint_acc)
-    modelCheckpoint_loss_best   = ModelCheckpoint(modelpath+"bestmodel_epoch{epoch:03d}_loss{val_loss:.2f}.h5", monitor='val_loss', save_best_only=True)
+    modelCheckpoint_loss_best   = ModelCheckpoint(modelpath+"bestmodel_epoch{epoch:03d}_loss{val_loss:.2f}.h5", monitor="val_loss", save_best_only=True)
     callbacks.append(modelCheckpoint_loss_best)
-    modelCheckpoint_acc_best    = ModelCheckpoint(modelpath+"bestmodel_epoch{epoch:03d}_acc{val_acc:.2f}.h5", monitor='val_acc', save_best_only=True)
+    modelCheckpoint_acc_best    = ModelCheckpoint(modelpath+"bestmodel_epoch{epoch:03d}_acc{val_acc:.2f}.h5", monitor="val_acc", save_best_only=True)
     callbacks.append(modelCheckpoint_acc_best)
-    reduceLROnPlateau           = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=1, min_lr=0.001, cooldown=10)
+    reduceLROnPlateau           = ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=1, min_lr=0.001, cooldown=10)
     callbacks.append(reduceLROnPlateau)
     return callbacks

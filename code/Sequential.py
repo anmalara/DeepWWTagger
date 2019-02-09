@@ -102,8 +102,6 @@ class SequentialNN:
                 indexBranch = (self.variables.index(nameBranch),)
                 NameScaler = FindScaler(nameBranch)
                 col_standard = self.data_train[:,indexBranch]
-                # if nameBranch == "jetBtag":
-                #     continue
                 if nameBranch == "jetMassSoftDrop" or nameBranch == "jetBtag":
                     col_standard = col_standard[col_standard[:,0]>0,:]
                 if NameScaler == "StandardScaler":
@@ -146,10 +144,12 @@ class SequentialNN:
         self.model.fit(self.data_train, self.labels_train, batch_size=self.params["batch_size"], epochs=self.params["epochs"], verbose=1, validation_data=(self.data_val, self.labels_val), callbacks=self.callbacks)
     @timeit
     def Predict(self):
-        self.predictions = self.model.predict(self.data_test)
+        self.predictions_train = self.model.predict(self.data_train)
+        self.predictions_val = self.model.predict(self.data_val)
+        self.predictions_test = self.model.predict(self.data_test)
     @timeit
     def Plots(self, show_figure = True, save_figure = False):
-        PlotInfos(self.labels_test, self.predictions, self.sample_names, self.callbacks[0], self.modelpath, show_figure = show_figure, save_figure = save_figure)
+        PlotInfos(self, show_figure = show_figure, save_figure = save_figure)
     @timeit
     def SaveModel(self):
         with open(self.modelpath+"mymodeljson.json", 'w') as f:
@@ -173,16 +173,17 @@ dict_var = {"Info_dict": Info_dict,
             "isSubset" : True,
             "isGen" : False,
             "filePath" : "/beegfs/desy/user/amalara/",
-            "modelpath" : "model_100epochs_300k",
+            "modelpath" : "model_example",
             "varnames" : ["JetInfo", "JetVariables"],
-            "variables" : ["jetPt", "jetEta", "jetPhi", "jetMass", "jetEnergy", "ncandidates", "jetBtag", "jetTau1", "jetTau2", "jetTau3", "jetTau21", "jetTau31", "jetTau32"],
+            # "variables" : ["jetPt", "jetEta", "jetPhi", "jetMass", "jetEnergy", "ncandidates", "jetBtag", "jetTau1", "jetTau2", "jetTau3", "jetTau21", "jetTau31", "jetTau32"],
+            "variables" : ["jetPt", "jetEta", "jetPhi", "jetMass", "jetEnergy", "jetBtag", "jetTau1", "jetTau2"],
             "sample_names": sorted(["Higgs", "QCD", "Top" ]),
             "radius" : "AK8",
             "pt_min" : 300,
             "pt_max" : 500,
-            "max_size" : 300000,
+            "max_size" : 100000,
             "layers" : [50,50,50,50,50,50,10],
-            "params" : {"epochs" : 100, "batch_size" : 512, "activation" : "relu", "kernel_initializer": "glorot_normal", "bias_initializer": "ones", "activation_last": "softmax", "optimizer": "adam", "metrics":["accuracy"], "dropoutRate": 0.01},
+            "params" : {"epochs" : 10, "batch_size" : 512, "activation" : "relu", "kernel_initializer": "glorot_normal", "bias_initializer": "ones", "activation_last": "softmax", "optimizer": "adam", "metrics":["accuracy"], "dropoutRate": 0.01},
             "seed" : 4444
             }
 
