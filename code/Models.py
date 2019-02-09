@@ -98,27 +98,31 @@ class SequentialNN:
             if name=="ncandidates": return "StandardScalerNoMean"
             elif name=="jetEta": return "StandardScaler"
             else: return "MinMaxScaler"
-        with open(self.modelpath+"NormInfo.txt", "w") as f:
-            if self.isNew: f.write("# nameBranch NameScaler scaler.mean_[0] scaler.scale_\n")
-            for iBranch in self.subset:
-                nameBranch = self.branches[iBranch]
-                indexBranch = (self.variables.index(nameBranch),)
-                NameScaler = FindScaler(nameBranch)
-                col_standard = self.data_train[:,indexBranch]
-                if nameBranch == "jetMassSoftDrop" or nameBranch == "jetBtag":
-                    col_standard = col_standard[col_standard[:,0]>0,:]
-                if NameScaler == "StandardScaler":
-                    scaler = preprocessing.StandardScaler().fit(col_standard)
-                    if self.isNew: f.write(nameBranch+" "+NameScaler+" "+str(scaler.mean_[0])+" "+str(scaler.scale_[0])+"\n")
-                if NameScaler == "MinMaxScaler":
-                    scaler = preprocessing.MinMaxScaler(feature_range=(0, 1)).fit(col_standard)
-                    if self.isNew: f.write(nameBranch+" "+NameScaler+" "+str(scaler.min_[0])+" "+str(scaler.scale_[0])+"\n")
-                if NameScaler == "StandardScalerNoMean":
-                    scaler = preprocessing.StandardScaler(with_mean=False).fit(col_standard)
-                    print scaler.mean_[0]
-                    if self.isNew: f.write(nameBranch+" "+NameScaler+" "+"0"+" "+str(scaler.scale_[0])+"\n")
-                for X in [self.data_train,self.data_val,self.data_test]:
-                    X[:,indexBranch] = scaler.transform(X[:,indexBranch])
+        lines = []
+        lines.append("# nameBranch NameScaler scaler.mean_[0] scaler.scale_\n")
+        for iBranch in self.subset:
+            nameBranch = self.branches[iBranch]
+            indexBranch = (self.variables.index(nameBranch),)
+            NameScaler = FindScaler(nameBranch)
+            col_standard = self.data_train[:,indexBranch]
+            if nameBranch == "jetMassSoftDrop" or nameBranch == "jetBtag":
+                col_standard = col_standard[col_standard[:,0]>0,:]
+            if NameScaler == "StandardScaler":
+                scaler = preprocessing.StandardScaler().fit(col_standard)
+                lines.append(nameBranch+" "+NameScaler+" "+str(scaler.mean_[0])+" "+str(scaler.scale_[0])+"\n")
+            if NameScaler == "MinMaxScaler":
+                scaler = preprocessing.MinMaxScaler(feature_range=(0, 1)).fit(col_standard)
+                lines.append(nameBranch+" "+NameScaler+" "+str(scaler.min_[0])+" "+str(scaler.scale_[0])+"\n")
+            if NameScaler == "StandardScalerNoMean":
+                scaler = preprocessing.StandardScaler(with_mean=False).fit(col_standard)
+                print scaler.mean_[0]
+                lines.append(nameBranch+" "+NameScaler+" "+"0"+" "+str(scaler.scale_[0])+"\n")
+            for X in [self.data_train,self.data_val,self.data_test]:
+                X[:,indexBranch] = scaler.transform(X[:,indexBranch])
+        if self.isNew:
+            with open(self.modelpath+"NormInfo.txt", "w") as f:
+                for line in lines:
+                    f.write(line)
     @timeit
     def SequentialModel(self):
         model = Sequential()
