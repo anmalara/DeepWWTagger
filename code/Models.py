@@ -159,7 +159,7 @@ class SequentialNN:
         plot_ROC_Curves(self.labels_val, self.predictions_val, self.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name=self.modelpath+"Roc"+extraName)
         plot_ROC_Curves1vs1(self.labels_val, self.predictions_val, self.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name=self.modelpath+"Roc1vs1"+extraName)
         plot_outputs_1d(self, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = self.modelpath+"Outputs"+extraName)
-        selfResponce(self.labels_val, self.predictions_val, self.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = self.modelpath+"selfResponce"+extraName)
+        NNResponce(self.labels_val, self.predictions_val, self.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = self.modelpath+"NNResponce"+extraName)
         MaximiseSensitivity(self.labels_val, self.predictions_val, self.sample_names, isLogy=True, show_figure=show_figure, save_figure=save_figure, name = self.modelpath+"Sensistivity"+extraName)
         if self.isNew:
             plot_losses(self.callbacks[0], min_epoch=0,  losses="loss", show_figure=show_figure, save_figure=save_figure, name=self.modelpath+"loss"+extraName)
