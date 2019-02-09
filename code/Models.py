@@ -24,6 +24,8 @@ from export_model import export_model
 class SequentialNN:
     @timeit
     def __init__(self, dict_var, isNew=True):
+        updareVars(self,dict_var,isNew)
+    def updareVars(self, dict_var, isNew=True):
         self.sample_names = dict_var["sample_names"]
         self.isNew = isNew
         self.Info_dict = dict_var["Info_dict"]
