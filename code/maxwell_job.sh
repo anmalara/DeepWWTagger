@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --partition=all
-#SBATCH --time=5:00:00                  # Maximum time request
+#SBATCH --time=12:00:00                 # Maximum time request
 #SBATCH --nodes=1                       # Number of nodes
 #SBATCH --constraint=GPU
 #SBATCH --workdir   /beegfs/desy/user/amalara/output_varariables/workdir
@@ -15,4 +15,4 @@
 source ~/.setpaths
 
 cd /beegfs/desy/user/amalara/DeepWWTagger/code
-python Sequential.py
+python Training.py

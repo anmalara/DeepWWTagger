@@ -11,6 +11,7 @@ from keras.models import Sequential, model_from_json, load_model
 from keras.layers import Dense, Dropout, BatchNormalization
 from keras.utils import to_categorical, plot_model
 from keras.optimizers import Adam
+from keras import metrics, regularizers
 
 from sklearn import preprocessing
 from sklearn.metrics import roc_curve, auc
@@ -24,8 +25,8 @@ from export_model import export_model
 class SequentialNN:
     @timeit
     def __init__(self, dict_var, isNew=True):
-        updareVars(self,dict_var,isNew)
-    def updareVars(self, dict_var, isNew=True):
+        self.UpdateVars(dict_var,isNew)
+    def UpdateVars(self, dict_var, isNew=True):
         self.sample_names = dict_var["sample_names"]
         self.isNew = isNew
         self.Info_dict = dict_var["Info_dict"]
@@ -45,6 +46,7 @@ class SequentialNN:
         self.modelpath = self.outputFolder+dict_var["modelpath"]+"/"
         self.layers = dict_var["layers"]
         self.params = dict_var["params"]
+        self.weights_dict = dict_var["weights"]
         if self.isNew:
             if not os.path.exists(self.modelpath):
                 os.makedirs(self.modelpath)
@@ -74,6 +76,7 @@ class SequentialNN:
             return sample
         data = []
         labels = []
+        weights = []
         for i, sample_name in enumerate(self.sample_names):
             sample = loadVariables(sample_name)
             sample = np.concatenate(sample)
@@ -81,13 +84,16 @@ class SequentialNN:
             sample = sample[:self.max_size,:]
             print(sample_name, sample.shape)
             label = np.ones(sample.shape[0],dtype=int)*i
+            weight = np.ones(sample.shape[0],dtype=int)*self.weights_dict[sample_name]
             data.append(sample)
             labels.append(label)
+            weights.append(weight)
         data = np.concatenate(data)
         labels = np.concatenate(labels)
+        weights = np.concatenate(weights)
         labels = to_categorical(labels,num_classes=len(self.sample_names))
-        self.data_train, self.data_val, self.labels_train, self.labels_val = train_test_split(data, labels, random_state=42, train_size=0.67)
-        self.data_val, self.data_test, self.labels_val, self.labels_test = train_test_split(self.data_val, self.labels_val, random_state=42, train_size=0.5)
+        self.data_train, self.data_val, self.labels_train, self.labels_val, self.weights_train, self.weights_val, = train_test_split(data, labels, weights, random_state=42, train_size=0.67)
+        self.data_val, self.data_test, self.labels_val, self.labels_test, self.weights_val, self.weights_test = train_test_split(self.data_val, self.labels_val, self.weights_val, random_state=42, train_size=0.5)
     @timeit
     def CreateSubSet(self):
         self.subset = tuple([self.branches.index(var) for var in self.variables])
@@ -150,7 +156,7 @@ class SequentialNN:
         self.model = model
     @timeit
     def FitModel(self):
-        self.model.fit(self.data_train, self.labels_train, batch_size=self.params["batch_size"], epochs=self.params["epochs"], verbose=1, validation_data=(self.data_val, self.labels_val), callbacks=self.callbacks)
+        self.model.fit(self.data_train, self.labels_train, sample_weight=self.weights_train, batch_size=self.params["batch_size"], epochs=self.params["epochs"], verbose=1, validation_data=(self.data_val, self.labels_val), callbacks=self.callbacks)
     @timeit
     def Predict(self):
         self.predictions_train = self.model.predict(self.data_train)

@@ -29,4 +29,6 @@
 #
 
 
-rsync -r --exclude=save -e ssh output_varariables amalara@naf-cms12.desy.de:/nfs/dust/cms/user/amalara/WorkingArea/File/NeuralNetwork/
+# rsync -r --exclude=save -e ssh output_varariables amalara@naf-cms12.desy.de:/nfs/dust/cms/user/amalara/WorkingArea/File/NeuralNetwork/
+
+rsync -r --exclude=save -e ssh amalara@naf-cms12.desy.de:/nfs/dust/cms/user/amalara/WorkingArea/File/NeuralNetwork/input_varariables/EventTagger /beegfs/desy/user/amalara/input_varariables/
