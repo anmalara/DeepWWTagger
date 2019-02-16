@@ -7,20 +7,20 @@ import time
 import copy
 import json
 
-# from keras.models import Sequential, model_from_json, load_model
-# from keras.layers import Dense, Dropout, BatchNormalization
-# from keras.utils import to_categorical, plot_model
-# from keras.optimizers import Adam
-# from keras import metrics, regularizers
-#
+from keras.models import Sequential, model_from_json, load_model
+from keras.layers import Dense, Dropout, BatchNormalization
+from keras.utils import to_categorical, plot_model
+from keras.optimizers import Adam
+from keras import metrics, regularizers
+
 from sklearn import preprocessing
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import train_test_split
 
 from RootToKerasFormat import EventTagger
-# from UtilsForTraining import *
+from UtilsForTraining import *
 from variables import *
-# from export_model import export_model
+from export_model import export_model
 
 
 

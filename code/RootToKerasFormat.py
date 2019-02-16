@@ -79,7 +79,7 @@ class TaggerBase(ModuleRunnerBase):
         for Objects in self.ObjectCollection:
             self.LoadObjectVars(Objects)
     def LoadSavedVars(self,path=""):
-        if path="":
+        if path=="":
             path = self.FileStorageOutput
         self.Vars = {}
         for Objects in self.ObjectCollection:
