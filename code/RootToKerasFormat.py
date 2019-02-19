@@ -11,7 +11,7 @@ import ROOT
 
 sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v3/CMSSW_9_4_10/src/UHH2/PersonalCode/")
 sys.path.append("/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94X_v3/CMSSW_9_4_10/src/UHH2/BoostedHiggsToWW/Analysis/macros/")
-from parallelise import *
+
 from tdrstyle_all import *
 from ModuleRunnerBase import ModuleRunnerBase
 
@@ -81,6 +81,8 @@ class TaggerBase(ModuleRunnerBase):
     def LoadSavedVars(self,path=""):
         if path=="":
             path = self.FileStorageOutput
+        else:
+            path = path+self.Collection+"/"+self.Channel+"channel"+"/"
         self.Vars = {}
         for Objects in self.ObjectCollection:
             print "Load ", Objects

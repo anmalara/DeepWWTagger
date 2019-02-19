@@ -17,7 +17,7 @@ from sklearn import preprocessing
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import train_test_split
 
-from RootToKerasFormat import EventTagger
+# from RootToKerasFormat import EventTagger
 from UtilsForTraining import *
 from variables import *
 from export_model import export_model
@@ -26,10 +26,8 @@ from export_model import export_model
 
 class EventClassifier(EventTagger):
     @timeit
-    def __init__(self, InputPath = ""):
+    def __init__(self,dict_var):
         EventTagger.__init__(self)
-        self.InputPath = InputPath
-        self.modelpath = "./"
         self.nObjects = self.TaggerBaseDict["MC_HZ"].nObjects
         self.SubSets = {"Event": tuple([self.TaggerBaseDict["MC_HZ"].VarNameListsDict["Event"].index(var) for var in [ "genInfo.m_weights", "weight_GLP", "weight_lumi"]]),
                         "Jet": tuple([self.TaggerBaseDict["MC_HZ"].VarNameListsDict["Jet"].index(var) for var in self.TaggerBaseDict["MC_HZ"].VarNameListsDict["Jet"]]),
@@ -37,6 +35,24 @@ class EventClassifier(EventTagger):
                         "Electron": tuple([self.TaggerBaseDict["MC_HZ"].VarNameListsDict["Electron"].index(var) for var in self.TaggerBaseDict["MC_HZ"].VarNameListsDict["Electron"]]),
                         "Muon": tuple([self.TaggerBaseDict["MC_HZ"].VarNameListsDict["Muon"].index(var) for var in self.TaggerBaseDict["MC_HZ"].VarNameListsDict["Muon"]]),
                         }
+        self.sample_names = self.TaggerBaseDict.keys()
+        self.isNew = True
+        self.filePath = dict_var["filePath"]
+        self.InputPath = self.filePath+"input_varariables/EventTagger/"
+        self.outputFolder = self.filePath+"output_varariables/Sequential/EventClassifier/"
+        self.modelpath = self.outputFolder+dict_var["modelpath"]+"/"
+        self.layers = dict_var["layers"]
+        self.params = dict_var["params"]
+        if self.isNew:
+            if not os.path.exists(self.modelpath):
+                os.makedirs(self.modelpath)
+            else:
+                for file in glob(self.modelpath+"*"):
+                    os.remove(file)
+            with open(self.modelpath+"mymodelinfo.json","w") as f:
+                f.write(json.dumps(dict_var))
+            with open(self.modelpath+"mymodelinfo.txt","w") as f:
+                f.write(str(dict_var))
     @timeit
     def InputShape(self):
         self.LoadVars(self.InputPath)
@@ -56,23 +72,23 @@ class EventClassifier(EventTagger):
             data.append(sample)
             labels.append(label)
             weights.append(weight)
-        data = np.concatenate(data)
+        data = self.Normalization(np.concatenate(data))
         labels = np.concatenate(labels)
         weights = np.concatenate(weights)
-        # labels = to_categorical(labels,num_classes=len(self.SamplesNames))
+        labels = to_categorical(labels,num_classes=len(self.SamplesNames))
         self.data_train, self.data_val, self.labels_train, self.labels_val, self.weights_train, self.weights_val, = train_test_split(data, labels, weights, random_state=42, train_size=0.67)
         self.data_val, self.data_test, self.labels_val, self.labels_test, self.weights_val, self.weights_test = train_test_split(self.data_val, self.labels_val, self.weights_val, random_state=42, train_size=0.5)
     @timeit
-    def Normalization(data):
+    def Normalization(self,data):
         lines = []
         scaler = preprocessing.MinMaxScaler(feature_range=(0, 1)).fit(data)
-        return = scaler.transform(data)
         lines.append("# nameBranch NameScaler scaler.mean_ scaler.scale_\n")
-        for i in range(len(data)):
-            lines.append(i+" "+"MinMaxScaler"+" "+str(scaler.min_[i])+" "+str(scaler.scale_[i])+"\n")
+        for i in range(data.shape[1]):
+            lines.append(str(i)+" "+"MinMaxScaler"+" "+str(scaler.min_[i])+" "+str(scaler.scale_[i])+"\n")
         with open(self.modelpath+"NormInfo.txt", "w") as f:
             for line in lines:
                 f.write(line)
+        return scaler.transform(data)
     @timeit
     def SequentialModel(self):
         model = Sequential()
@@ -126,32 +142,15 @@ class EventClassifier(EventTagger):
 
 
 
-EC = EventClassifier(filePath)
-EC.InputShape()
-EC.Normalization()
 
 
-
-
-
-filePath = "/beegfs/desy/user/amalara/input_varariables/"
+filePath = "/beegfs/desy/user/amalara/"
 # filePath = "/nfs/dust/cms/user/amalara/WorkingArea/File/NeuralNetwork/"
 # filePath = "/Users/andrea/Desktop/Analysis/"
 
 
-dict_var = {"Info_dict": Info_dict,
-            "isSubset" : True,
-            "isGen" : False,
-            "filePath" : "/beegfs/desy/user/amalara/",
+dict_var = {"filePath" : "/beegfs/desy/user/amalara/",
             "modelpath" : "model_newarch",
-            "varnames" : ["JetInfo", "JetVariables"],
-            # "variables" : ["jetPt", "jetEta", "jetPhi", "jetMass", "jetEnergy", "ncandidates", "jetBtag", "jetTau1", "jetTau2", "jetTau3", "jetTau21", "jetTau31", "jetTau32"],
-            "variables" : ["jetPt", "jetEta", "jetPhi", "jetMass", "jetEnergy", "jetBtag", "jetTau1", "jetTau2"],
-            "sample_names": sorted(["Higgs", "QCD", "Top" ]),
-            "radius" : "AK8",
-            "pt_min" : 300,
-            "pt_max" : 500,
-            "max_size" : -1,
             "layers" : [50,200,200,50,10],
             "params" : {"epochs" : 10, "batch_size" : 512, "activation" : "relu", "kernel_initializer": "glorot_normal", "bias_initializer": "ones", "activation_last": "softmax", "optimizer": "adam", "metrics":["accuracy"], "dropoutRate": 0.01},
             "seed" : 4444
@@ -159,7 +158,12 @@ dict_var = {"Info_dict": Info_dict,
 
 np.random.seed(dict_var["seed"])
 
-NN = EventClassifier(dict_var)
-# NN.InputShape()
-# NN.CreateSubSet()
-# NN.Normalization()
+
+EC = EventClassifier(dict_var)
+EC.InputShape()
+
+EC.SequentialModel()
+EC.FitModel()
+EC.Predict()
+EC.Plots(show_figure = False, save_figure = True)
+EC.SaveModel()

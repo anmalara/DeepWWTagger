@@ -17,7 +17,9 @@ from sklearn.metrics import roc_curve, auc
 nbins = 100
 
 
-colorsample = {"Other Bkg" : "k", "Random" : "r", "Higgs": "tab:red", "QCD": "b", "Top": "tab:green", "DY": "tab:olive", "WJets": "m", "WZ": "tab:purple", "ZZ": "tab:cyan"}
+colorsample = {"Other Bkg" : "k", "Random" : "r",
+               "Higgs": "tab:red", "QCD": "b", "Top": "tab:green", "DY": "tab:olive", "WJets": "m", "WZ": "tab:purple", "ZZ": "tab:cyan",
+               "MC_HZ": "tab:red", "MC_QCD": "b", "MC_TTbar": "tab:green", "MC_DYJets": "tab:olive", "MC_WZ": "m", "MC_ZZ": "tab:cyan"}
 
 def timeit(method):
     def timed(*args, **kw):
